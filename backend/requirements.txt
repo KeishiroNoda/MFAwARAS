@@ -1,0 +1,8 @@
+sqlalchemy==1.4.0
+fastapi==0.89.1
+uvicorn==0.20.0
+pymysql==1.0.2
+pydantic==1.10.4
+alembic==1.9.2
+sqlalchemy_utils==0.39.0
+mysqlclient==2.1.1

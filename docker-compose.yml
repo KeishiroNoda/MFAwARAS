@@ -1,0 +1,69 @@
+version: '3'
+services:
+  mfa_backend:
+    build:
+      context: ./backend/
+      dockerfile: ./Dockerfile
+    container_name: 'mfa_backend'
+    working_dir: '/home/guest/SampleApp/backend'
+    tty: true
+    ports:
+      - 8000:8000
+    volumes:
+      - $PWD/backend:/home/guest/SampleApp/backend
+    depends_on: 
+      - mfa_db
+    environment:
+      TZ: Asia/Tokyo
+    env_file:
+      - ./.env
+    command: ["./scripts/up.sh"]
+    networks:
+      - mfa-network
+
+  mfa_db:
+    build:
+      context: ./db/
+      dockerfile: ./Dockerfile
+    container_name: 'mfa_db'
+    platform: linux/x86_64 
+    restart: always
+    tty: true
+    env_file:
+      - ./.env
+    volumes:
+      - $PWD/db/initdb.d:/docker-entrypoint-initdb.d #初期処理のフォルダ。初回起動のみでおｋ
+      - dbdata:/var/lib/mysql #ここにデータ永続化するためのファイルが入る。
+    ports: 
+      - 3308:3308
+    networks:
+      - mfa-network
+
+  mfa_frontend:
+    build:
+      context: ./frontend/
+      dockerfile: ./Dockerfile
+    container_name: 'mfa_frontend'
+    tty: true
+    volumes:
+      - $PWD/frontend:/home/guest/SampleApp/frontend
+    depends_on: 
+      - mfa_backend
+    command: sh
+    ports:
+      - 3000:3000
+    networks:
+      - mfa-network
+      
+
+volumes:
+ dbdata:
+
+networks:
+  default:
+    external:
+      name: bridge
+  mfa-network:
+    name: mfa-network
+    driver: bridge
+    external: true
